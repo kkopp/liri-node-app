@@ -58,4 +58,7 @@ typings/
 .env
 
 # next.js build output
-.next
+.next node_modules
+ .DS_Store 
+.env
+
