@@ -1,90 +1,46 @@
 require("dotenv").config();
 
+var axios = require("axios");
+var moment = require("moment");
 var keys = require("./keys.js");
 var Spotify = require("node-spotify-api");
-var axios = require("axios");
-var nodeArgs = process.argv;
-var movieName = "";
-var artist = process.argv[3];
-
 var spotify = new Spotify(keys.spotify);
 
 var command = process.argv[2];
-
-
-for (var i = 4; i < process.argv.length; i++) {
-    secondInput += '+' + process.argv[i];
-}
-
-for (var i = 3; i < nodeArgs.length; i++) {
-
-    if (i > 3 && i < nodeArgs.length) {
-        movieName = movieName + "+" + nodeArgs[i];
-    }
-    else {
-        movieName += nodeArgs[i];
-
-    }
-}
+var nodeArgs = process.argv.slice(3).join("+");
 
 
 function mySwitch(command) {
 
     switch (command) {
 
+        case "movie-this":
+            getMovie(nodeArgs);
+            break;
+
+        case "concert-this":
+            getConcert(nodeArgs);
+            break;
+
         case "spotify-this-song":
             getSpotify();
             break;
 
-        case "movie-this":
-            getMovie();
-            break;
 
-        case "concert-this":
-            getConcert();
-            break;
 
     }
 
-    function getSpotify(song) {
-        if (song === undefined) {
-            song = "The Final Countdown";
+    function getMovie(nodeArgs) {
+
+        var movieName = nodeArgs;
+        if (!movieName) {
+            movieName = "Idiocracy";
         }
-
-        spotify.search(
-            {
-                type: "track",
-                query: command
-            },
-            function (err, data) {
-                if (err) {
-                    console.log("No information found. Try again.");
-                    return;
-                }
-
-                var songs = data.tracks.items;
-
-                for (var i = 0; i < songs.length; i++) {
-                    console.log("------------------------------------------")
-                    console.log(i);
-                    console.log("Artist(s): " + songs[i].artists.map(getArtistNames));
-                    console.log("Song Name: " + songs[i].name);
-                    console.log("Preview Link For the Song: " + songs[i].preview_url);
-                    console.log("Album: " + songs[i].album.name);
-                    console.log("------------------------------------------")
-                }
-            }
-        )
-    }
-
-    function getMovie() {
-
         var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&tomatoes=true&apikey=8b84b7d";
-
-        console.log(queryUrl)
 
         axios.get(queryUrl).then(
             function (response) {
+                //console.log(response);
                 console.log("------------------------------------------");
                 console.log("Title: " + response.data.Title);
                 console.log("Release Year: " + response.data.Year);
@@ -101,21 +57,65 @@ function mySwitch(command) {
 
     function getConcert() {
 
-        var queryUrl = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
+        var artist = process.argv[3]
+        if (!artist) {
+            artist = "Elton John"
+        }
+        var queryUrl = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=d299f3d77038a2beb28bb1122dce5ba9";
 
-        console.log(queryUrl)
+        // var bands = data.artistdata.name;
 
-        axios.get(queryUrl).then(
-            function () {
+        axios.get(queryUrl).then(function (response) {
+            //console.log(response);
+            for (var i = 0; i < 5; i++) {
                 console.log("------------------------------------------");
-                console.log("Artist Name: " );
-                console.log("Venue Name: " );
-                console.log("Venue Location: " );
-                console.log("Date of Event: " );
+                console.log("Artist Name: " + artist);
+                console.log("Venue Name: " + response.data[i].venue.name);
+                console.log("Venue Location: " + response.data[i].venue.city);
+                console.log("Date of Event: " + moment(response.data[i].datetime).format("MM/DD/YYYY"));
                 console.log("------------------------------------------");
             }
+        });
+    }
+
+
+    function getSpotify() {
+    
+        var song = process.argv.slice(3).join(" ");
+        if (!song) {
+            song = "The Final Countdown";
+            console.log(song);
+        }
+
+
+
+        spotify.search(
+            {
+                type: "track",
+                query: song,
+                limit: 10
+            },
+
+            function (err, data) {
+                if (err) {
+                    return console.log("No information found. Try again.");
+
+                }
+
+                for (var i = 0; i < data.tracks.items.length; i++) {
+                    console.log("------------------------------------------")
+                    console.log("Artist(s): " + data.tracks.items[i].album.artists[0].name);
+                    console.log("Song Name: " + data.tracks.items[i].name);
+                    console.log("Preview Link For the Song: " + data.tracks.items[i].preview_url);
+                    console.log("Album: " + data.tracks.items[i].album.name);
+                    console.log("------------------------------------------")
+                    }
+                
+                }
         )
     }
+
+
 }
 
 
