@@ -11,20 +11,20 @@ var command = process.argv[2];
 var nodeArgs = process.argv.slice(3).join(" ");
 
 
-function mySwitch(command) {
+function mySwitch(command, nodeArgs) {
 
     switch (command) {
 
         case "movie-this":
-            getMovie();
+            getMovie(nodeArgs);
             break;
 
         case "concert-this":
-            getConcert();
+            getConcert(nodeArgs);
             break;
 
         case "spotify-this-song":
-            getSpotify();
+            getSpotify(nodeArgs);
             break;
 
         case "do-what-it-says":
@@ -86,11 +86,11 @@ function getConcert() {
     });
 }
 
-function getSpotify(nodeArgs) {
+function getSpotify() {
 
     var song = nodeArgs;
     if (!song) {
-        song = "The Sign";
+        song = "The Sign+Ace of Base";
         console.log(song);
     }
 
@@ -120,21 +120,19 @@ function getSpotify(nodeArgs) {
 }
 
 function doWhatItSays() {
-    fs.readFile("random.txt", "utf8", function(error, data) {
-      if (error) {
-        return console.log(error);
+    fs.readFile("random.txt", "utf8", function(err, data) {
+      if (err) {
+        return console.log(err);
       }
       var dataArr = data.replace(/(\r\n|\n|\r)/gm, "").split(",");
-      console.log(dataArr);
+      //console.log(dataArr);
       for (var i = 0; i < dataArr.length; i += 2) {
-        var cmd = dataArr[i];
-        var arg = dataArr[i + 1].replace(/['"]+/g, '').split(' ').join("+");
-        mySwitch(cmd, arg);
+        var command = dataArr[i];
+        var nodeArgs = dataArr[i + 1].replace(/['"]+/g, '').split(' ').join("+");
+        mySwitch(command, nodeArgs);
       }
     });
   }
-
-
 
 
 mySwitch(command);
