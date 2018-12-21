@@ -38,7 +38,7 @@ function mySwitch(command, nodeArgs) {
     }
 }
 
-function getMovie() {
+function getMovie(nodeArgs) {
 
     var movieName = nodeArgs;
     if (!movieName) {
@@ -63,7 +63,7 @@ function getMovie() {
     )
 }
 
-function getConcert() {
+function getConcert(nodeArgs) {
 
     var artist = nodeArgs;
     if (!artist) {
@@ -83,12 +83,16 @@ function getConcert() {
             console.log("Date of Event: " + moment(response.data[i].datetime).format("MM/DD/YYYY"));
             console.log("------------------------------------------");
         }
+    })
+    .catch(function(err){
+        console.log(err);
     });
 }
 
-function getSpotify() {
+function getSpotify(nodeArgs) {
 
     var song = nodeArgs;
+    //console.log(song);
     if (!song) {
         song = "The Sign+Ace of Base";
         console.log(song);
@@ -107,14 +111,29 @@ function getSpotify() {
 
             }
 
-            for (var i = 0; i < data.tracks.items.length; i++) {
+            // for (var i = 0; i < data.tracks.items.length; i++) {
+            //     console.log("------------------------------------------")
+            //     console.log("Artist(s): " + data.tracks.items[i].album.artists[0].name);
+            //     console.log("Song Name: " + data.tracks.items[i].name);
+            //     console.log("Preview Link For the Song: " + data.tracks.items[i].preview_url);
+            //     console.log("Album: " + data.tracks.items[i].album.name);
+            //     console.log("------------------------------------------")
+            // }
+            //var songs = data.tracks.items;
+            var {items: songs} = data.tracks;
+
+
+            songs.map(function(song){
+                var { album:{ artists, name: albumName }, name, preview_url } = song;
                 console.log("------------------------------------------")
-                console.log("Artist(s): " + data.tracks.items[i].album.artists[0].name);
-                console.log("Song Name: " + data.tracks.items[i].name);
-                console.log("Preview Link For the Song: " + data.tracks.items[i].preview_url);
-                console.log("Album: " + data.tracks.items[i].album.name);
+                console.log("Artist(s): " + artists[0].name);
+                console.log("Song Name: " + name);
+                console.log("Preview Link For the Song: " + preview_url);
+                console.log("Album: " + albumName);
                 console.log("------------------------------------------")
-            }
+            })
+                
+            
 
         })
 }
@@ -126,11 +145,20 @@ function doWhatItSays() {
       }
       var dataArr = data.replace(/(\r\n|\n|\r)/gm, "").split(",");
       //console.log(dataArr);
-      for (var i = 0; i < dataArr.length; i += 2) {
-        var command = dataArr[i];
-        var nodeArgs = dataArr[i + 1].replace(/['"]+/g, '').split(' ').join("+");
-        mySwitch(command, nodeArgs);
-      }
+    //   for (var i = 0; i < dataArr.length; i += 2) {
+    //     var command = dataArr[i];
+    //     var nodeArgs = dataArr[i+1].replace(/['"]+/g, '').split(' ').join("+");
+    //     //console.log(nodeArgs);
+    //     //console.log(command);
+    //     mySwitch(command, nodeArgs);
+    //   }
+    dataArr.map(function(arg, index){
+        if(index % 2 === 0){
+         var command = arg;
+         var nodeArgs = dataArr[index+1];
+         mySwitch(command, nodeArgs);
+        }
+    });
     });
   }
 
